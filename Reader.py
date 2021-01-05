@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import math
 
 
 class City:
@@ -12,13 +13,14 @@ class City:
 
 class Link:
 
-    def __init__(self, it, name, src, dest, cap, cost):
+    def __init__(self, it, name, src, dest, cap, cost, length):
         self.id = it
         self.name = name
         self.source = src
         self.target = dest
         self.capacity = cap
         self.cost = cost
+        self.length = length
 
 
 class Demand:
@@ -29,6 +31,22 @@ class Demand:
         self.source = src
         self.target = dest
         self.demand_value = val
+
+
+def haverdist(source_lat, source_lon, target_lat, target_lon):
+    r = 6367
+
+    rlat1 = source_lat * math.pi / 180
+    rlon1 = source_lon * math.pi / 180
+    rlat2 = target_lat * math.pi / 180
+    rlon2 = target_lon * math.pi / 180
+    drlat = (rlat2 - rlat1)
+    drlon = (rlon2 - rlon1)
+
+    init = (math.sin(drlat / 2.)) ** 2 + (math.cos(rlat1)) * \
+           (math.cos(rlat2)) * (math.sin(drlon / 2.)) ** 2
+
+    return 2.0 * r * math.asin(min(1., math.sqrt(init)))
 
 
 # loading xml file to the model ########################################################################################
@@ -62,7 +80,22 @@ for child in nodes:
 # loading links
 i = 1
 for child in linksBis:
-    links.append(Link(i, child.attrib['id'], child[0].text, child[1].text, child[2][0][0].text, child[2][0][1].text))
+    source_coor = []
+    target_coor = []
+
+    for city in cities:
+        if city.name == child[0].text:
+            source_coor.append(float(city.x_coor))
+            source_coor.append(float(city.y_coor))
+        if city.name == child[1].text:
+            target_coor.append(float(city.x_coor))
+            target_coor.append(float(city.y_coor))
+
+    dist = haverdist(source_coor[0], source_coor[1], target_coor[0], target_coor[1])
+    dist = int(dist)
+
+    links.append(
+        Link(i, child.attrib['id'], child[0].text, child[1].text, child[2][0][0].text, child[2][0][1].text, dist))
     i = i + 1
 
 # loading demands
@@ -75,10 +108,10 @@ for x in cities:
     print(x.id, x.name, x.x_coor, x.y_coor)
 
 for x in links:
-    print(x.name, x.source, x.target, x.cost, x.capacity)
+    print(x.name, x.source, x.target, x.cost, x.capacity, x.length)
 
-for x in demands:
-    print(x.id, x.name, x.source, x.target, x.demand_value)
+# for x in demands:
+#    print(x.id, x.name, x.source, x.target, x.demand_value)
 
 # selecting size of the network ########################################################################################
 networkSize = 50  # size of the network
@@ -218,6 +251,37 @@ for stream in selectedDemands:
     file.write("\n")
 
 file.write(";\n\n")
-file.write("param travel_cost (tr):")                       #TODO obliczanie dlugości łuków, geograficzne ograniczenia dla miast
+file.write("param travel_cost (tr):\t1\t2\t3\t4:=\n")  # TODO geograficzne ograniczenia dla miast, automatyzacja wypisywania nieistotnych parametrow (Delays itp)
+for link in selectedLinks:
+    file.write("\t\t")
+    file.write(str(link.id))
+    for i in range(0, 4):
+        file.write("\t")
+        cost = float(link.cost)
+        cost = int(cost/10)
+        file.write(str(cost))
+    file.write("\n")
+
+file.write(";\n\n")
+file.write("param capacity (tr):\t1\t2\t3\t4:=\n")
+for i in range(1, 3):
+    file.write("\t\t")
+    file.write(str(i))
+    file.write("\t10\t10\t10\t10\n")
+
+file.write(";\n\n")
+file.write("param acc_delay:=\n")
+file.write("\tDELA\tDEL\n")
+file.write("\tDELAY\tDELA\n")
+file.write("\tDELAYS\tDELAY\n")
+file.write("\tDELAYSB\tDELAYS\n")
+file.write("\tDEL\tDEL\n")
+
+file.write(";\n\n")
+file.write("param log_func:=\n")
+file.write("\tNONE\tWER\n")
+file.write("\tWER\tPER\n")
+file.write("\tPER\tNONE\n;")
+
 
 file.close()
