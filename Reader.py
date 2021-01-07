@@ -104,23 +104,32 @@ for child in demandsBis:
     demands.append(Demand(i, child.attrib['id'], child[0].text, child[1].text, child[2].text))
     i = i + 1
 
-for x in cities:
-    print(x.id, x.name, x.x_coor, x.y_coor)
+# for x in cities:
+#    print(x.id, x.name, x.x_coor, x.y_coor)
 
-for x in links:
-    print(x.name, x.source, x.target, x.cost, x.capacity, x.length)
+# for x in links:
+#   print(x.name, x.source, x.target, x.cost, x.capacity, x.length)
 
 # for x in demands:
 #    print(x.id, x.name, x.source, x.target, x.demand_value)
 
 # selecting size of the network ########################################################################################
-networkSize = 50  # size of the network
 selectedCities = []
 selectedLinks = []
 selectedDemands = []
 
-for i in range(networkSize):
-    selectedCities.append(cities[i])
+south = 47.0        # min 47
+north = 55.0        # maks 55
+east = 15.0         # maks 15
+west = 5.0          # min 5
+
+counter = 1
+for city in cities:
+    if (float(city.x_coor) > west) and (float(city.x_coor) < east) and (float(city.y_coor) > south) and (float(city.y_coor) < north):
+        city.id = counter
+        counter = counter + 1
+        selectedCities.append(city)
+
 
 counter = 1
 for i in links:
@@ -131,6 +140,7 @@ for i in links:
                     i.id = counter
                     counter = counter + 1
                     selectedLinks.append(i)
+                    break
 
 counter = 0
 for i in demands:
@@ -141,6 +151,7 @@ for i in demands:
                     counter = counter + 1
                     i.id = counter
                     selectedDemands.append(i)
+                    break
 
 print(len(selectedCities), len(selectedLinks), len(selectedDemands))
 
@@ -148,9 +159,10 @@ print(len(selectedCities), len(selectedLinks), len(selectedDemands))
 file = open("C:\\Users\\Admin\\PycharmProjects\\NetworkModel\\PP.dat", "w")
 
 file.write("set VERT :=")
-for city in selectedCities:
+for i in selectedCities:
     file.write(" ")
-    file.write(str(city.id))
+    file.write(str(i.id))
+
 
 file.write("; \n\n")
 file.write("set ARCS :=")
@@ -181,8 +193,8 @@ for vertex in selectedCities:
     file.write("set ARCSE[")
     file.write(str(vertex.id))
     file.write("] :=")
-    for arc in links:
-        if arc.source == vertex.name:
+    for arc in selectedLinks:
+        if arc.target == vertex.name:
             file.write(" ")
             file.write(str(arc.id))
     file.write(";\n")
@@ -192,8 +204,8 @@ for vertex in selectedCities:
     file.write("set ARCSL[")
     file.write(str(vertex.id))
     file.write("] :=")
-    for arc in links:
-        if arc.target == vertex.name:
+    for arc in selectedLinks:
+        if arc.source == vertex.name:
             file.write(" ")
             file.write(str(arc.id))
     file.write(";\n")
