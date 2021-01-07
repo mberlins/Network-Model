@@ -58,6 +58,9 @@ childrenBis = []
 cities = []
 links = []
 demands = []
+vehicles = [1, 2, 3, 4]
+vehicles_coefficients = [0.7, 0.9, 1.1, 1.3]
+vehicles_capacities = [6, 25, 5, 18, 15, 6, 5, 8]
 
 for child in root:
     children.append(child)
@@ -129,6 +132,7 @@ for city in cities:
         city.id = counter
         counter = counter + 1
         selectedCities.append(city)
+        print(city.id, city.name)
 
 
 counter = 1
@@ -140,7 +144,13 @@ for i in links:
                     i.id = counter
                     counter = counter + 1
                     selectedLinks.append(i)
+                    selectedLinks.append(Link(counter, i.name, i.target, i.source, i.capacity, i.cost, i.length))
+                    counter = counter + 1
+                    print(i.id, i.source, i.target, i.cost, i.capacity)
                     break
+
+for i in selectedLinks:
+    print(i.id, i.source, i.target, i.cost, i.capacity, i.length)
 
 counter = 0
 for i in demands:
@@ -151,6 +161,7 @@ for i in demands:
                     counter = counter + 1
                     i.id = counter
                     selectedDemands.append(i)
+                    print(i.id, i.source, i.target, i.demand_value)
                     break
 
 print(len(selectedCities), len(selectedLinks), len(selectedDemands))
@@ -262,14 +273,26 @@ for stream in selectedDemands:
     file.write("DELAYSB")
     file.write("\n")
 
+# file.write(";\n\n")
+# file.write("param travel_cost (tr):\t1\t2\t3\t4:=\n")
+# for link in selectedLinks:
+#    file.write("\t\t")
+#    file.write(str(link.id))
+#    for i in range(0, 4):
+#        file.write("\t")
+#        cost = float(link.cost)
+#        cost = int(cost/10)
+#        file.write(str(cost))
+#    file.write("\n")
+
 file.write(";\n\n")
-file.write("param travel_cost (tr):\t1\t2\t3\t4:=\n")  # TODO geograficzne ograniczenia dla miast, automatyzacja wypisywania nieistotnych parametrow (Delays itp)
+file.write("param travel_cost (tr):\t1\t2\t3\t4:=\n")
 for link in selectedLinks:
     file.write("\t\t")
     file.write(str(link.id))
-    for i in range(0, 4):
+    for i in range(len(vehicles)):
         file.write("\t")
-        cost = float(link.cost)
+        cost = float(link.length * vehicles_coefficients[i])
         cost = int(cost/10)
         file.write(str(cost))
     file.write("\n")
