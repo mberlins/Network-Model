@@ -60,7 +60,7 @@ links = []
 demands = []
 vehicles = [1, 2, 3, 4]
 vehicles_coefficients = [0.7, 0.9, 1.1, 1.3]
-vehicles_capacities = [6, 25, 5, 18, 15, 6, 5, 8]
+vehicles_capacities = [5, 10, 15, 20, 5, 10, 15, 20]
 
 for child in root:
     children.append(child)
@@ -122,7 +122,7 @@ selectedLinks = []
 selectedDemands = []
 
 south = 47.0        # min 47
-north = 55.0        # maks 55
+north = 51.33        # maks 55
 east = 15.0         # maks 15
 west = 5.0          # min 5
 
@@ -302,7 +302,7 @@ file.write("param capacity (tr):\t1\t2\t3\t4:=\n")
 for i in range(1, 3):
     file.write("\t\t")
     file.write(str(i))
-    file.write("\t10\t10\t10\t10\n")
+    file.write("\t5\t10\t15\t20\n")
 
 file.write(";\n\n")
 file.write("param acc_delay:=\n")
